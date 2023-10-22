@@ -11,6 +11,7 @@ public class EnemyScript : MonoBehaviour
     private float previousXVel = 0;
     private float previousYVel = 0;
     public GameObject player;
+    public GameObject flashlightLink;
 
     //distance between the player and enemy at which the enemy would charge directly at the player;
     [SerializeField]
@@ -37,16 +38,22 @@ public class EnemyScript : MonoBehaviour
     }
     void OnCollisionEnter2D(Collision2D coll)
     {
-        //Changed angle for enemyMovement
-        player = GameObject.Find("Player");
-        if (Vector3.Distance(player.transform.position, transform.position) < 10)
+        if (Vector3.Distance(player.transform.position, transform.position) < attackDistanceTrigger)
         {
             rb.AddForce(new Vector2(rb.velocity.x * -1, rb.velocity.y * -1), ForceMode2D.Impulse);
-            angle = Mathf.Atan2((player.transform.position.y - transform.position.y), (player.transform.position.x - transform.position.x ));
-            Debug.Log(angle);
+            angle = Mathf.Atan2((player.transform.position.y - transform.position.y), (player.transform.position.x - transform.position.x));
+            Debug.Log("I'm chasing the player");
+        }
+        else if (coll.gameObject == flashlightLink) 
+        {
+            Debug.Log("here");
+            angle += Mathf.PI;
+            rb.AddForce(new Vector2(rb.velocity.x * -10, rb.velocity.y * -10), ForceMode2D.Impulse);
         }
         else
         {
+            Debug.Log("I'm looking around.");
+            //Changed angle for enemyMovement
             float deltaAngle = 0;
             if (System.Math.Abs(rb.velocity.x) < 0.001)
             {
