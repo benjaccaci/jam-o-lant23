@@ -11,6 +11,14 @@ public class EnemyScript : MonoBehaviour
     private float previousYVel = 0;
     public GameObject player;
     public GameObject flashlightLink;
+    public CircleCollider2D playerCollider;
+    public EdgeCollider2D flashlightCollider;
+
+    //how many walls the enemy has to hit before searching;
+    int  scurryingWallsLeft = 0;
+    //
+    bool isScurrying = false;
+    //public BoxCollider2D flashlightCollider;
     //local value of rotation in radians
     public float angle = 0;
 
@@ -36,17 +44,25 @@ public class EnemyScript : MonoBehaviour
         rb.AddForce(moveDirection, ForceMode2D.Impulse);
         previousXVel = rb.velocity.x;
         previousYVel = rb.velocity.y;
-        transform.rotation = Quaternion.Euler(0,0,angle*180/Mathf.PI);
+        transform.rotation = Quaternion.Euler(0, 0, angle * 180 / Mathf.PI);
     }
     void OnCollisionEnter2D(Collision2D coll)
     {
-        if (coll.gameObject == flashlightLink)
+        float xDifference = coll.GetContact(0).point.x - coll.gameObject.transform.position.x;
+        float yDifference = coll.GetContact(0).point.y - coll.gameObject.transform.position.y;
+        if (coll.collider == flashlightCollider && !isScurrying)
         {
             Debug.Log("Hit by Light");
             angle += Mathf.PI;
             rb.AddForce(new Vector2(rb.velocity.x * -2, rb.velocity.y * -2), ForceMode2D.Impulse);
+            scurryingWallsLeft = 5;
+            isScurrying = true;
         }
-        else if(Vector3.Distance(player.transform.position, transform.position) < attackDistanceTrigger)
+        else if (coll.collider == playerCollider) 
+        {
+            Debug.Log("Ladies and gentlemen, we got him.");
+        }
+        else if (Vector3.Distance(player.transform.position, transform.position) < attackDistanceTrigger && scurryingWallsLeft == 0)
         {
             rb.AddForce(new Vector2(rb.velocity.x * -1, rb.velocity.y * -1), ForceMode2D.Impulse);
             angle = Mathf.Atan2((player.transform.position.y - transform.position.y), (player.transform.position.x - transform.position.x));
@@ -57,6 +73,10 @@ public class EnemyScript : MonoBehaviour
             Debug.Log("I'm looking around.");
             rb.AddForce(new Vector2(rb.velocity.x / -2, rb.velocity.y / -2), ForceMode2D.Impulse);
             angle = Mathf.Atan2(rb.velocity.y, rb.velocity.x);
+            if (scurryingWallsLeft > 0) {
+                scurryingWallsLeft -= 1;
+            }
+            isScurrying = false;
         }
     }
 }
